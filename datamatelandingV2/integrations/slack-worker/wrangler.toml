@@ -1,0 +1,12 @@
+name = "datamate-b2b-form"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+[vars]
+# Orígenes que pueden enviar el formulario (separados por coma).
+ALLOWED_ORIGINS = "https://datamate.cl,https://www.datamate.cl,https://gybzzmatt.github.io"
+
+# Secretos (no van en este archivo):
+#   npx wrangler secret put SLACK_WEBHOOK_URL
+#   npx wrangler secret put SLACK_WEBHOOK_URL_FDE     (opcional)
+#   npx wrangler secret put SLACK_WEBHOOK_URL_DATOS   (opcional)
