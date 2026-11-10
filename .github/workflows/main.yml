@@ -1,0 +1,59 @@
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  SITE_DIR: datamatelandingV2
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generar index.html desde el código fuente
+        working-directory: ${{ env.SITE_DIR }}
+        run: python3 build.py
+
+      - name: Probar el Worker de Slack
+        working-directory: ${{ env.SITE_DIR }}/integrations/slack-worker
+        run: node test.mjs
+
+      - name: Armar el sitio público (solo la página y su hoja de estilos)
+        run: |
+          mkdir -p _site
+          cp "$SITE_DIR/index.html" "$SITE_DIR/site.css" _site/
+          touch _site/.nojekyll
+          test -s _site/index.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
